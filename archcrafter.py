@@ -1,6 +1,7 @@
 import subprocess
 import argparse
 import os
+import shutil
 
 
 class Archcrafter:
@@ -18,7 +19,7 @@ class Archcrafter:
 
     def add_args(self):
         self.parser.add_argument("MusicPath", help="specify the folder of the music files".title(), type=str)
-        self.parser.add_argument("-mv", "--move", help="move the files instead of copying".title())
+        self.parser.add_argument("-mv", "--move",action="store_true", help="move the files instead of copying".title())
 
     def _verify_location(self):
         return True if os.path.isdir(self.args.MusicPath) else False
@@ -33,6 +34,19 @@ class Archcrafter:
         else:
             raise NotADirectoryError
 
-    def move(self):
-        subprocess.call("")
+    def add_songs(self):
+        self.get_songs()
+        subprocess.call("pkill mpd")
+        subprocess.run("cd ~/.mpd")
+        subprocess.run("rm mpd.db")
+        subprocess.run("mpd &")
+
+    def move_songs(self):
+        for a_song in self.songs:
+            if self.args.move:
+                shutil.move(a_song, self.to_music_path)
+            else:
+                shutil.copy(a_song, self.to_music_path)
+
+
 Archcrafter()
