@@ -1,52 +1,60 @@
-import subprocess
 import argparse
 import os
 import shutil
+import subprocess
 
 
-class Archcrafter:
+class Arch:
     def __init__(self):
-        self.parser = argparse.ArgumentParser(description="add songs to archcraft's MP3 player".title())
+        self.parser = argparse.ArgumentParser(description="Add Songs To The Inbuilt Music Player in ArchCraft .")
         self.add_args()
         self.args = self.parser.parse_args()
 
-        self.ending = (".mp3", ".wma")
+        self.extensions = ('.mp3', '.wma')
+        self.music_loc = '/home/gautam/Music'
 
-        self.from_music_path = ""
-        self.to_music_path = "~/Music"
-        self.contents = ""
+        self.location = self.args.location
+
         self.songs = []
 
-    def add_args(self):
-        self.parser.add_argument("MusicPath", help="specify the folder of the music files".title(), type=str)
-        self.parser.add_argument("-mv", "--move",action="store_true", help="move the files instead of copying".title())
+        self.get_songs()
 
-    def _verify_location(self):
-        return True if os.path.isdir(self.args.MusicPath) else False
+    def add_args(self):
+        self.parser.add_argument('location', help="The Directory Of Your Music Files")
+        self.parser.add_argument('-s', '--subdirectories', help="To Specify Whether to Add Songs from SubDirectories",
+                                 action="store_true")
+        self.parser.add_argument('-mv', '--move', help="Move The Files instead of Copying Them .", action="store_true")
+
+    def _check(self):
+        return True if os.path.isdir(self.location) else False
 
     def get_songs(self):
-        if self._verify_location():
-            self.from_music_path = self.args.MusicPath
-            self.contents = os.listdir(self.from_music_path)
-            for file in list(self.contents):
-                if file.endswith(self.ending):
-                    self.songs.append(file)
-        else:
-            raise NotADirectoryError
-
-    def add_songs(self):
-        self.get_songs()
-        subprocess.call("pkill mpd")
-        subprocess.run("cd ~/.mpd")
-        subprocess.run("rm mpd.db")
-        subprocess.run("mpd &")
-
-    def move_songs(self):
-        for a_song in self.songs:
-            if self.args.move:
-                shutil.move(a_song, self.to_music_path)
+        if self._check():
+            if self.args.subdirectories:
+                for dir_path, dir_name, files in os.walk(self.location):
+                    for file in files:
+                        if file.endswith(self.extensions):
+                            self.songs.append(file)
             else:
-                shutil.copy(a_song, self.to_music_path)
+                for file in list(os.listdir(self.location)):
+                    if file.endswith(self.extensions):
+                        self.songs.append(file)
+            self.moc_songs()
+        else:
+            self.parser.print_help()
+
+    def moc_songs(self):
+        os.chdir(self.location)
+        if self.args.move:
+            for songs in self.songs:
+                shutil.move(songs, self.music_loc)
+        else:
+            for songs in self.songs:
+                shutil.copy(songs, self.music_loc)
+        self.mpd()
+
+    def mpd(self):
+        subprocess.run("pkill mpd", shell=True)
 
 
-Archcrafter()
+x = Arch()
