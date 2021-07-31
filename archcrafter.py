@@ -2,6 +2,8 @@ import argparse
 import os
 import shutil
 import subprocess
+import getpass
+import time
 
 
 class Arch:
@@ -10,8 +12,10 @@ class Arch:
         self.add_args()
         self.args = self.parser.parse_args()
 
+        self.user = getpass.getuser()
+
         self.extensions = ('.mp3', '.wma')
-        self.music_loc = '/home/gautam/Music'
+        self.music_loc = f'/home/{self.user}/Music'
 
         self.location = self.args.location
 
@@ -53,8 +57,12 @@ class Arch:
                 shutil.copy(songs, self.music_loc)
         self.mpd()
 
-    def mpd(self):
+    @staticmethod
+    def mpd():
         subprocess.run("pkill mpd", shell=True)
+        subprocess.run("mpd &", shell=True)
+        time.sleep(0.2)
+        subprocess.run("mpc ls | mpc add", shell=True)
 
 
-x = Arch()
+Arch()
