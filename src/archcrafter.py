@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import argparse
 import os
 import shutil
@@ -59,10 +61,11 @@ class Arch:
 
     @staticmethod
     def mpd():
-        subprocess.run("pkill mpd", shell=True)
-        subprocess.run("mpd &", shell=True)
-        time.sleep(0.2)
-        subprocess.run("mpc ls | mpc add", shell=True)
+        subprocess.call("pkill mpd", shell=True)
+        subprocess.call("mpd &", shell=True)
+        # time.sleep(0.2)
+        subprocess.call("mpc update", shell=True)
+        subprocess.call("mpc ls | mpc add", shell=True)
 
 
 Arch()
